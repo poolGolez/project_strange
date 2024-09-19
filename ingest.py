@@ -9,7 +9,7 @@ INDEX_NAME = "top-movies-gemini-embedding-004"
 embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
 
 
-def ingest(file_path: str):
+def ingest(file_path: str, dry_run: bool = True):
     loader = CSVLoader(
         file_path,
         source_column="id",
@@ -19,12 +19,15 @@ def ingest(file_path: str):
     docs = loader.load()
     print(f"Loading {len(docs)} documents to Pinecone...")
 
+    if dry_run:
+        print("The option dry_run is set to True. Goodbye!")
+        return
+
     chunk_size = 128
     for i in range(0, len(docs), chunk_size):
         batch = docs[i: i + chunk_size]
         print(f"Loading {len(batch)} ({i + 1}-{i + len(batch)}) documents")
         PineconeVectorStore.from_documents(batch, embeddings, index_name=INDEX_NAME)
-
     print(f"Loaded a total of {len(docs)} documents to Pinecone.")
 
 
