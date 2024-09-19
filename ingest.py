@@ -18,10 +18,16 @@ def ingest(file_path: str):
     )
     docs = loader.load()
     print(f"Loading {len(docs)} documents to Pinecone...")
-    PineconeVectorStore.from_documents(docs, embeddings, index_name=INDEX_NAME)
-    print(f"Loaded {len(docs)} documents to Pinecone.")
+
+    chunk_size = 128
+    for i in range(0, len(docs), chunk_size):
+        batch = docs[i: i + chunk_size]
+        print(f"Loading {len(batch)} ({i + 1}-{i + len(batch)}) documents")
+        PineconeVectorStore.from_documents(batch, embeddings, index_name=INDEX_NAME)
+
+    print(f"Loaded a total of {len(docs)} documents to Pinecone.")
 
 
 if __name__ == "__main__":
-    file_path = "resources/movies_100_only.csv"
+    file_path = "resources/movies_complete.csv"
     ingest(file_path)
